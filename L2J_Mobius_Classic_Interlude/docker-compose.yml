@@ -56,7 +56,7 @@ services:
     <<: *common
     image: phpmyadmin
     ports:
-      - 8080:80
+      - 8085:80
     environment:
       - TZ=Etc/UTC
       - PMA_HOST=mariadb
