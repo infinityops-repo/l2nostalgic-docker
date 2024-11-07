@@ -1,7 +1,11 @@
 # Create base image
 FROM ubuntu:latest AS base
 
-RUN apk update && apk add --no-cache apache-ant openjdk21-jre-headless bash
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apache-ant \
+    openjdk-21-jre-headless \
+    bash \
+    && rm -rf /var/lib/apt/lists/*
 
 # Build project
 FROM base AS build
