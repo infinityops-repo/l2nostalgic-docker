@@ -25,7 +25,7 @@
 	<property name="build.dist.dbinstaller" location="${build.dist}/db_installer" />
 	<property name="datapack" location="dist" />
 	<property name="libs" location="${datapack}/libs" />
-	<property name="src" location="src/java" />
+	<property name="src" location="java" />
 
 	<path id="classpath">
 		<fileset dir="${libs}">
