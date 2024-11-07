@@ -18,6 +18,7 @@
 		along with this program. If not, see [http://www.gnu.org/licenses/].
 	</description>
 
+	<!-- 
 	<property name="build" location="../build" />
 	<property name="build.bin" location="${build}/bin" />
 	<property name="build.dist" location="${build}/dist" />
@@ -26,6 +27,17 @@
 	<property name="datapack" location="dist" />
 	<property name="libs" location="${datapack}/libs" />
 	<property name="src" location="java" />
+	-->
+
+<property name="build" location="./build" />
+<property name="build.bin" location="${build}/bin" />
+<property name="build.dist" location="${build}/dist" />
+<property name="build.dist.libs" location="${build.dist}/libs" />
+<property name="build.dist.dbinstaller" location="${build.dist}/db_installer" />
+<property name="datapack" location="dist" />
+<property name="libs" location="${datapack}/libs" />
+<property name="src" location="java" />
+
 
 	<path id="classpath">
 		<fileset dir="${libs}">

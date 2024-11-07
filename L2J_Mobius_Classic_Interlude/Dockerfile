@@ -1,7 +1,11 @@
 # Create base image
 FROM alpine:latest AS base
 
-RUN apk update && apk add --no-cache apache-ant openjdk21-jre-headless bash
+RUN apk update && apk add --no-cache \
+    apache-ant \
+    openjdk21-jdk \
+    bash \
+    git
 
 # Build project
 FROM base AS build
@@ -16,13 +20,19 @@ WORKDIR /src
 
 COPY . .
 
+# Garantir que os diretórios de build existam
+RUN mkdir -p build/dist/libs
+RUN mkdir -p dist/game/config
+RUN mkdir -p dist/login/config
+
 # Change some config paths to locations inside the container (the rest of the files will be stored on the host and then will be mounted as a volume)
 # This is done so the original configs are not overwritten
 # In order to change the following files, you need to rebuild the image: LoginServer.ini, Server.ini, ipconfig.xml
 RUN sed -i \
-	-e "s/.\/config\/LoginServer.ini/\/cfg\/LoginServer.ini/" \
-	-e "s/.\/config\/Server.ini/\/cfg\/Server.ini/" \
-	-e "s/.\/config\/ipconfig.xml/\/cfg\/ipconfig.xml/" /src/java/org/l2jmobius/Config.java
+    -e "s|./config/LoginServer.ini|/cfg/LoginServer.ini|" \
+    -e "s|./config/Server.ini|/cfg/Server.ini|" \
+    -e "s|./config/ipconfig.xml|/cfg/ipconfig.xml|" \
+    /src/java/org/l2jmobius/Config.java
 
 # Add network config
 RUN echo -e '\
@@ -30,30 +40,33 @@ RUN echo -e '\
 <!-- Note: If file is named "ipconfig.xml" this data will be used as network configuration, otherwise server will configure it automatically! -->\n\
 <!-- Externalhost here (Internet IP) or Localhost IP for local test -->\n\
 <gameserver address="127.0.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../data/xsd/ipconfig.xsd">\n\
-	<!-- Localhost here -->\n\
-	<define subnet="127.0.0.0/8" address="127.0.0.1" />\n\
-	<!-- Internalhosts here (LANs IPs) -->\n\
-	<define subnet="192.168.1.0/24" address="192.168.1.2" />\n\
+    <!-- Localhost here -->\n\
+    <define subnet="127.0.0.0/8" address="127.0.0.1" />\n\
+    <!-- Internalhosts here (LANs IPs) -->\n\
+    <define subnet="192.168.1.0/24" address="192.168.1.2" />\n\
 </gameserver>\n\
-' >/src/dist/game/config/ipconfig.xml
+' > /src/dist/game/config/ipconfig.xml
 
-# Update database/hostname settings
+# Update database/hostname settings in Server.ini
 RUN sed -i -E \
-	-e "s/\/\/\w+\/\w+\?/\/\/${MARIADB_HOSTNAME}\/${MARIADB_DATABASE}?/" \
-	-e "s/^Login =.*$/Login = ${MARIADB_USER}/" \
-	-e "s/^Password =.*$/Password = ${MARIADB_PASSWORD}/" \
-	-e "s/^LoginHost =.*$/LoginHost = ${LOGIN_SERVER_HOSTNAME}/" /src/dist/game/config/Server.ini
+    -e "s|//\w+/\w+\?|//${MARIADB_HOSTNAME}/${MARIADB_DATABASE}?|" \
+    -e "s/^Login =.*$/Login = ${MARIADB_USER}/" \
+    -e "s/^Password =.*$/Password = ${MARIADB_PASSWORD}/" \
+    -e "s/^LoginHost =.*$/LoginHost = ${LOGIN_SERVER_HOSTNAME}/" \
+    /src/dist/game/config/Server.ini
 
+# Update database/hostname settings in LoginServer.ini
 RUN sed -i -E \
-	-e "s/\/\/\w+\/\w+\?/\/\/${MARIADB_HOSTNAME}\/${MARIADB_DATABASE}?/" \
-	-e "s/^Login =.*$/Login = ${MARIADB_USER}/" \
-	-e "s/^Password =.*$/Password = ${MARIADB_PASSWORD}/" \
-	-e "s/^LoginHostname =.*$/LoginHostname = ${LOGIN_SERVER_HOSTNAME}/" /src/dist/login/config/LoginServer.ini
+    -e "s|//\w+/\w+\?|//${MARIADB_HOSTNAME}/${MARIADB_DATABASE}?|" \
+    -e "s/^Login =.*$/Login = ${MARIADB_USER}/" \
+    -e "s/^Password =.*$/Password = ${MARIADB_PASSWORD}/" \
+    -e "s/^LoginHostname =.*$/LoginHostname = ${LOGIN_SERVER_HOSTNAME}/" \
+    /src/dist/login/config/LoginServer.ini
 
 # Build
-RUN ant -f build.xml jar
+RUN ant -verbose -f build.xml jar
 
-RUN cp /build/dist/libs/*.jar /src/dist/libs/
+RUN cp /src/build/dist/libs/*.jar /src/dist/libs/
 
 # Keep only built files and persistent configs
 FROM base
