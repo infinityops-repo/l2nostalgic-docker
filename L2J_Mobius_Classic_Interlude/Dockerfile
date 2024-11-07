@@ -1,5 +1,5 @@
 # Create base image
-FROM alpine:latest AS base
+FROM ubuntu:latest AS base
 
 RUN apk update && apk add --no-cache apache-ant openjdk21-jre-headless bash
 
