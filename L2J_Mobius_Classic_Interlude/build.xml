@@ -80,24 +80,41 @@
 		</fileset>
 	</path>
 
-	<target name="compile-base" depends="init">
+	<target name="compile" depends="init" description="Compila o código fonte">
+		<!-- Fase 1: Interfaces -->
 		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
-			<classpath refid="base.classpath" />
 			<include name="org/l2jmobius/gameserver/model/interfaces/**" />
 			<include name="org/l2jmobius/gameserver/model/holders/**" />
-			<include name="org/l2jmobius/gameserver/model/item/**" />
+			<include name="org/l2jmobius/gameserver/model/item/type/**" />
+			<include name="org/l2jmobius/gameserver/util/**" />
+			<classpath refid="classpath" />
 		</javac>
-	</target>
 
-	<target name="compile" depends="compile-base">
+		<!-- Fase 2: Classes base -->
+		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
+			<include name="org/l2jmobius/gameserver/model/item/**" />
+			<include name="org/l2jmobius/gameserver/model/skill/**" />
+			<include name="org/l2jmobius/gameserver/model/stats/**" />
+			<include name="org/l2jmobius/gameserver/model/zone/**" />
+			<exclude name="org/l2jmobius/gameserver/model/item/type/**" />
+			<classpath>
+				<path refid="classpath" />
+				<pathelement location="${build.bin}" />
+			</classpath>
+		</javac>
+
+		<!-- Fase 3: Resto do código -->
 		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
 			<classpath>
-				<path refid="base.classpath" />
+				<path refid="classpath" />
 				<pathelement location="${build.bin}" />
 			</classpath>
 			<exclude name="org/l2jmobius/gameserver/model/interfaces/**" />
 			<exclude name="org/l2jmobius/gameserver/model/holders/**" />
 			<exclude name="org/l2jmobius/gameserver/model/item/**" />
+			<exclude name="org/l2jmobius/gameserver/model/skill/**" />
+			<exclude name="org/l2jmobius/gameserver/model/stats/**" />
+			<exclude name="org/l2jmobius/gameserver/model/zone/**" />
 		</javac>
 	</target>
 
