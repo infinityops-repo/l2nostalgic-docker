@@ -73,10 +73,30 @@
 		<mkdir dir="${build.bin}" />
 	</target>
 
-	<target name="compile" depends="init" description="Compile the source.">
-		<javac srcdir="${src}" classpathref="classpath" destdir="${build.bin}" compiler="modern" debug="true" debuglevel="lines,vars,source" includeantruntime="false" source="21" target="21" encoding="UTF-8" />
+	<path id="base.classpath">
+		<fileset dir="${libs}">
+			<include name="*.jar" />
+			<exclude name="**/*-sources.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile-base" depends="init">
+		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
+			<classpath refid="base.classpath" />
+			<include name="org/l2jmobius/gameserver/model/interfaces/**" />
+			<include name="org/l2jmobius/gameserver/model/holders/**" />
+			<include name="org/l2jmobius/gameserver/model/item/**" />
+		</javac>
 	</target>
 
+	<target name="compile" depends="compile-base">
+		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
+			<classpath>
+				<path refid="base.classpath" />
+				<pathelement location="${build.bin}" />
+			</classpath>
+			<exclude name="org/l2jmobius/gameserver/model/interfaces/**" />
+			<exclude name="org/l2jmobius/gameserver/model/holders/**" />
 	<target name="jar" depends="compile" description="Create the jar files.">
 		<tstamp>
 			<format property="time.stamp" pattern="yyyy-MM-dd HH:mm:ss z" />
