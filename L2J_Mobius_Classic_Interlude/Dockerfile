@@ -22,7 +22,7 @@ COPY . .
 RUN sed -i \
 	-e "s/.\/config\/LoginServer.ini/\/cfg\/LoginServer.ini/" \
 	-e "s/.\/config\/Server.ini/\/cfg\/Server.ini/" \
-	-e "s/.\/config\/ipconfig.xml/\/cfg\/ipconfig.xml/" /src/java/org/l2jmobius/Config.java
+	-e "s/.\/config\/ipconfig.xml/\/cfg\/ipconfig.xml/" /src/src/java/org/l2jmobius/Config.java
 
 # Add network config
 RUN echo -e '\
