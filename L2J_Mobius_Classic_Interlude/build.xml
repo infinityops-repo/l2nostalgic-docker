@@ -18,7 +18,6 @@
 		along with this program. If not, see [http://www.gnu.org/licenses/].
 	</description>
 
-	<!-- 
 	<property name="build" location="../build" />
 	<property name="build.bin" location="${build}/bin" />
 	<property name="build.dist" location="${build}/dist" />
@@ -27,24 +26,12 @@
 	<property name="datapack" location="dist" />
 	<property name="libs" location="${datapack}/libs" />
 	<property name="src" location="java" />
-	-->
-
-<property name="build" location="./build" />
-<property name="build.bin" location="${build}/bin" />
-<property name="build.dist" location="${build}/dist" />
-<property name="build.dist.libs" location="${build.dist}/libs" />
-<property name="build.dist.dbinstaller" location="${build.dist}/db_installer" />
-<property name="datapack" location="dist" />
-<property name="libs" location="${datapack}/libs" />
-<property name="src" location="java" />
-
 
 	<path id="classpath">
 		<fileset dir="${libs}">
 			<include name="*.jar" />
 			<exclude name="**/*-sources.jar" />
 		</fileset>
-		<pathelement location="${build.bin}" />
 	</path>
 
 	<pathconvert property="manifest.libs" pathsep=" ">
@@ -74,49 +61,8 @@
 		<mkdir dir="${build.bin}" />
 	</target>
 
-	<path id="base.classpath">
-		<fileset dir="${libs}">
-			<include name="*.jar" />
-			<exclude name="**/*-sources.jar" />
-		</fileset>
-	</path>
-
-	<target name="compile" depends="init" description="Compila o código fonte">
-		<!-- Fase 1: Interfaces -->
-		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
-			<include name="org/l2jmobius/gameserver/model/interfaces/**" />
-			<include name="org/l2jmobius/gameserver/model/holders/**" />
-			<include name="org/l2jmobius/gameserver/model/item/type/**" />
-			<include name="org/l2jmobius/gameserver/util/**" />
-			<classpath refid="classpath" />
-		</javac>
-
-		<!-- Fase 2: Classes base -->
-		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
-			<include name="org/l2jmobius/gameserver/model/item/**" />
-			<include name="org/l2jmobius/gameserver/model/skill/**" />
-			<include name="org/l2jmobius/gameserver/model/stats/**" />
-			<include name="org/l2jmobius/gameserver/model/zone/**" />
-			<exclude name="org/l2jmobius/gameserver/model/item/type/**" />
-			<classpath>
-				<path refid="classpath" />
-				<pathelement location="${build.bin}" />
-			</classpath>
-		</javac>
-
-		<!-- Fase 3: Resto do código -->
-		<javac srcdir="${src}" destdir="${build.bin}" debug="true" includeantruntime="false">
-			<classpath>
-				<path refid="classpath" />
-				<pathelement location="${build.bin}" />
-			</classpath>
-			<exclude name="org/l2jmobius/gameserver/model/interfaces/**" />
-			<exclude name="org/l2jmobius/gameserver/model/holders/**" />
-			<exclude name="org/l2jmobius/gameserver/model/item/**" />
-			<exclude name="org/l2jmobius/gameserver/model/skill/**" />
-			<exclude name="org/l2jmobius/gameserver/model/stats/**" />
-			<exclude name="org/l2jmobius/gameserver/model/zone/**" />
-		</javac>
+	<target name="compile" depends="init" description="Compile the source.">
+		<javac srcdir="${src}" classpathref="classpath" destdir="${build.bin}" compiler="modern" debug="true" debuglevel="lines,vars,source" includeantruntime="false" source="21" target="21" encoding="UTF-8" />
 	</target>
 
 	<target name="jar" depends="compile" description="Create the jar files.">
