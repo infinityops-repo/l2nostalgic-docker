@@ -2,7 +2,7 @@
 FROM ubuntu:latest AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    apache-ant \
+    ant \
     openjdk-21-jre-headless \
     bash \
     && rm -rf /var/lib/apt/lists/*
