@@ -97,6 +97,10 @@
 			</classpath>
 			<exclude name="org/l2jmobius/gameserver/model/interfaces/**" />
 			<exclude name="org/l2jmobius/gameserver/model/holders/**" />
+			<exclude name="org/l2jmobius/gameserver/model/item/**" />
+		</javac>
+	</target>
+
 	<target name="jar" depends="compile" description="Create the jar files.">
 		<tstamp>
 			<format property="time.stamp" pattern="yyyy-MM-dd HH:mm:ss z" />
