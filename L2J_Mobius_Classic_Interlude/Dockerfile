@@ -28,6 +28,12 @@ RUN mkdir -p build/bin \
     java/org/l2jmobius/gameserver/model \
     java/org/l2jmobius/gameserver/network
 
+# Certifique-se de que o diretório de bibliotecas está presente
+RUN mkdir -p libs
+
+# Copie as bibliotecas necessárias
+COPY libs/*.jar libs/
+
 # Compilar primeiro o core
 RUN cd java && javac -sourcepath . org/l2jmobius/*.java
 
