@@ -20,22 +20,8 @@ WORKDIR /src
 
 COPY . .
 
-# Atualize o caminho do arquivo no comando sed
-RUN sed -i \
-    -e "s/.\/config\/LoginServer.ini/\/cfg\/LoginServer.ini/" \
-    -e "s/.\/config\/Server.ini/\/cfg\/Server.ini/" \
-    -e "s/.\/config\/ipconfig.xml/\/cfg\/ipconfig.xml/" /src/src/java/org/l2jmobius/Config.java
-
-# Garantir que todos os diretórios necessários existam
-RUN mkdir -p build/bin \
-    build/dist/libs \
-    dist/game/config \
-    dist/login/config \
-    java/org/l2jmobius/gameserver/model \
-    java/org/l2jmobius/gameserver/network
-
 # Compilar primeiro o core
-RUN cd java && javac -sourcepath . org/l2jmobius/*.java
+RUN javac -sourcepath src/java -d build/bin src/java/org/l2jmobius/**/*.java
 
 # Depois compilar o resto
 RUN ant -f build.xml compile
