@@ -110,7 +110,6 @@ services:
       - 7777:7777/tcp
     volumes:
       - game_dist:/host-dist
-      - ./start_game_server.sh:/host-dist/start_game_server.sh  # Montar o script de inicialização
 
   # Login Server com script de inicialização
   login-server:
@@ -127,4 +126,3 @@ services:
       - 2106:2106/tcp
     volumes:
       - login_dist:/host-dist
-      - ./start_login_server.sh:/host-dist/start_login_server.sh  # Montar o script de inicialização
