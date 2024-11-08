@@ -109,7 +109,7 @@ services:
     ports:
       - 7777:7777/tcp
     volumes:
-      - game_dist:/host-dist
+      - game_dist:/host-dist/data
 
   # Login Server com script de inicialização
   login-server:
@@ -125,4 +125,4 @@ services:
     ports:
       - 2106:2106/tcp
     volumes:
-      - login_dist:/host-dist
+      - login_dist:/host-dist/data

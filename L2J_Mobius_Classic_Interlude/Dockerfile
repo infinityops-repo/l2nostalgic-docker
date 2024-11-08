@@ -59,7 +59,7 @@ RUN ant -f build.xml jar
 # Copiar os arquivos JAR construídos para o diretório de distribuição
 RUN cp /build/dist/libs/*.jar /src/dist/libs/
 
-# Certifique-se de que GameServerTask.sh e LoginServerTask.sh estão no local correto
+# Copiar os scripts de tarefa para o diretório de build
 RUN cp /build/dist/game/GameServerTask.sh /src/dist/game/GameServerTask.sh
 RUN cp /build/dist/login/LoginServerTask.sh /src/dist/login/LoginServerTask.sh
 
@@ -87,11 +87,9 @@ COPY start_login_server.sh /scripts/start_login_server.sh
 # Definir permissões de execução para os scripts
 RUN chmod +x /scripts/start_game_server.sh /scripts/start_login_server.sh
 
-# Copiar os arquivos de tarefa para /host-dist
-RUN mkdir -p /host-dist/game
-COPY --from=build /src/dist/game/GameServerTask.sh /host-dist/game/GameServerTask.sh
-RUN chmod +x /host-dist/game/GameServerTask.sh
+# Copiar os scripts de tarefa para /scripts/ para evitar conflitos com volumes
+COPY --from=build /src/dist/game/GameServerTask.sh /scripts/GameServerTask.sh
+COPY --from=build /src/dist/login/LoginServerTask.sh /scripts/LoginServerTask.sh
 
-RUN mkdir -p /host-dist/login
-COPY --from=build /src/dist/login/LoginServerTask.sh /host-dist/login/LoginServerTask.sh
-RUN chmod +x /host-dist/login/LoginServerTask.sh
+# Definir permissões de execução para os scripts de tarefa
+RUN chmod +x /scripts/GameServerTask.sh /scripts/LoginServerTask.sh
