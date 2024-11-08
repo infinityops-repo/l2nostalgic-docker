@@ -2,8 +2,10 @@ version: '3.8'
 
 volumes:
   db-setup-scripts:
+  game_dist:
+  login_dist:
 
-# Estas variáveis de ambiente vêm do arquivo .env
+# Variáveis de ambiente do arquivo .env
 x-env: &env
   MARIADB_PASSWORD: '${MARIADB_PASSWORD:-default_pass}'
   MARIADB_ROOT_PASSWORD: '${MARIADB_ROOT_PASSWORD:-default_root_pass}'
@@ -27,6 +29,7 @@ services:
       - ./dist/db_installer/sql/game:/game-sql-scripts
       - db-setup-scripts:/all-sql-scripts
 
+  # Serviço de banco de dados MariaDB
   database:
     <<: *common
     image: mariadb
@@ -35,14 +38,7 @@ services:
       <<: [*env]
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test:
-        [
-          'CMD',
-          'healthcheck.sh',
-          '--su-mysql',
-          '--connect',
-          '--innodb_initialized',
-        ]
+      test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -54,6 +50,7 @@ services:
       sql-scripts:
         condition: service_completed_successfully
 
+  # Serviço PHPMyAdmin
   phpmyadmin:
     <<: *common
     image: phpmyadmin
@@ -66,7 +63,7 @@ services:
       database:
         condition: service_healthy
 
-  # Serviço de build para o Game Server
+  # Serviço de Build para o Game Server
   builder-gameserver:
     image: gameserver:latest
     build:
@@ -82,7 +79,7 @@ services:
       database:
         condition: service_healthy
 
-  # Serviço de build para o Login Server
+  # Serviço de Build para o Login Server
   builder-loginserver:
     image: loginserver:latest
     build:
@@ -98,7 +95,7 @@ services:
       database:
         condition: service_healthy
 
-  # Game Server
+  # Game Server com comandos de depuração
   game-server:
     <<: *common
     image: gameserver:latest
@@ -109,6 +106,9 @@ services:
         condition: service_healthy
     container_name: game_server
     command: 'bash -c "\
+      echo $PATH && \
+      which cp && \
+      ls -la /usr/bin/cp && \
       /usr/bin/cp /opt/l2/GameServer.jar /host-dist/libs/GameServer.jar && \
       mkdir -p /host-dist/game/log && \
       cd /host-dist/game/ && \
@@ -118,7 +118,7 @@ services:
     volumes:
       - ./dist:/host-dist
 
-  # Login Server
+  # Login Server com comandos de depuração
   login-server:
     <<: *common
     image: loginserver:latest
@@ -129,6 +129,9 @@ services:
         condition: service_healthy
     container_name: login_server
     command: 'bash -c "\
+      echo $PATH && \
+      which cp && \
+      ls -la /usr/bin/cp && \
       /usr/bin/cp /opt/l2/LoginServer.jar /host-dist/libs/LoginServer.jar && \
       mkdir -p /host-dist/Login/log && \
       cd /host-dist/login/ && \
