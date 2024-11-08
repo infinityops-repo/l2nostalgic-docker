@@ -56,12 +56,19 @@ RUN sed -i -E \
 # Construir o projeto usando Ant
 RUN ant -f build.xml jar
 
+# Adicionar comandos de depuração para listar diretórios após o build
+RUN echo "Listando /src/dist/game/" && ls -la /src/dist/game/
+RUN echo "Listando /src/dist/libs/" && ls -la /src/dist/libs/
+
 # Copiar os arquivos JAR construídos para o diretório de distribuição
-RUN cp /build/dist/libs/*.jar /src/dist/libs/
+RUN mkdir -p /src/dist/libs/
+RUN cp /src/dist/libs/*.jar /src/dist/libs/
 
 # Copiar os scripts de tarefa para o diretório de build
-RUN cp /build/dist/game/GameServerTask.sh /src/dist/game/GameServerTask.sh
-RUN cp /build/dist/login/LoginServerTask.sh /src/dist/login/LoginServerTask.sh
+RUN mkdir -p /src/dist/game/
+RUN mkdir -p /src/dist/login/
+RUN cp /src/dist/game/GameServerTask.sh /src/dist/game/GameServerTask.sh
+RUN cp /src/dist/login/LoginServerTask.sh /src/dist/login/LoginServerTask.sh
 
 # Etapa Final
 FROM base
