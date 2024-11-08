@@ -73,12 +73,12 @@ COPY --from=build /src/dist/game/config/ipconfig.xml /cfg/
 COPY --from=build /src/dist/game/config/Server.ini /cfg/
 COPY --from=build /src/dist/login/config/LoginServer.ini /cfg/
 
+# Criar diretório para scripts de inicialização
+RUN mkdir -p /scripts/
+
 # Copiar os scripts de inicialização para o container
-COPY start_game_server.sh /host-dist/start_game_server.sh
-COPY start_login_server.sh /host-dist/start_login_server.sh
+COPY start_game_server.sh /scripts/start_game_server.sh
+COPY start_login_server.sh /scripts/start_login_server.sh
 
 # Definir permissões de execução para os scripts
-RUN chmod +x /host-dist/start_game_server.sh /host-dist/start_login_server.sh
-
-# Definir o ponto de entrada (opcional, dependendo de como você deseja iniciar)
-# ENTRYPOINT ["/host-dist/start_game_server.sh"]
+RUN chmod +x /scripts/start_game_server.sh /scripts/start_login_server.sh
