@@ -1,7 +1,9 @@
+version: '3.8'
+
 volumes:
   db-setup-scripts:
 
-# These env variables are coming from the .env file
+# Estas variáveis de ambiente vêm do arquivo .env
 x-env: &env
   MARIADB_PASSWORD: '${MARIADB_PASSWORD:-default_pass}'
   MARIADB_ROOT_PASSWORD: '${MARIADB_ROOT_PASSWORD:-default_root_pass}'
@@ -13,11 +15,10 @@ x-common: &common
   tty: True
 
 services:
-  # This service just combines all SQL scripts in a single directory and mounts it as a volume to be used by the DB
+  # Serviço para combinar todos os scripts SQL
   sql-scripts:
     image: alpine
     entrypoint: ['/bin/sh', '-c']
-    # We can't mount 2 directories in 1 volume so we first copy all script to a temp volume
     command:
       - |
         cp /login-sql-scripts/*.sql /all-sql-scripts/ && cp /game-sql-scripts/*.sql /all-sql-scripts/
@@ -25,10 +26,11 @@ services:
       - ./dist/db_installer/sql/login:/login-sql-scripts
       - ./dist/db_installer/sql/game:/game-sql-scripts
       - db-setup-scripts:/all-sql-scripts
+
   database:
     <<: *common
     image: mariadb
-    container_name: mariadb # This name is important as it is also the hostname that the server will use to connect to the DB
+    container_name: mariadb
     environment:
       <<: [*env]
     command: --default-authentication-plugin=mysql_native_password
@@ -46,12 +48,12 @@ services:
       retries: 10
       start_period: 5s
     volumes:
-      # Every script in /docker-entrypoint-initdb.d will be executed on creation
       - db-setup-scripts:/docker-entrypoint-initdb.d
       - ./db_data:/var/lib/mysql
     depends_on:
       sql-scripts:
         condition: service_completed_successfully
+
   phpmyadmin:
     <<: *common
     image: phpmyadmin
@@ -63,31 +65,51 @@ services:
     depends_on:
       database:
         condition: service_healthy
-  # This service will build the image for the Login and Game servers
-  builder:
-    image: server:latest
-    depends_on:
-      database:
-        condition: service_healthy
+
+  # Serviço de build para o Game Server
+  builder-gameserver:
+    image: gameserver:latest
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         MARIADB_PASSWORD: ${MARIADB_PASSWORD}
         MARIADB_USER: ${MARIADB_USER}
         MARIADB_DATABASE: ${MARIADB_DATABASE}
-        MARIADB_HOSTNAME: mariadb # same as the database.service.container_name
-        LOGIN_SERVER_HOSTNAME: login_server # same as the login-server.service.container_name
+        MARIADB_HOSTNAME: mariadb
+        LOGIN_SERVER_HOSTNAME: login_server
+    depends_on:
+      database:
+        condition: service_healthy
+
+  # Serviço de build para o Login Server
+  builder-loginserver:
+    image: loginserver:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+        MARIADB_USER: ${MARIADB_USER}
+        MARIADB_DATABASE: ${MARIADB_DATABASE}
+        MARIADB_HOSTNAME: mariadb
+        LOGIN_SERVER_HOSTNAME: login_server
+    depends_on:
+      database:
+        condition: service_healthy
+
+  # Game Server
   game-server:
     <<: *common
-    image: server:latest
+    image: gameserver:latest
     depends_on:
-      builder:
+      builder-gameserver:
         condition: service_completed_successfully
       database:
         condition: service_healthy
     container_name: game_server
     command: 'bash -c "\
-      cp /opt/l2/GameServer.jar /host-dist/libs/GameServer.jar && \
+      /usr/bin/cp /opt/l2/GameServer.jar /host-dist/libs/GameServer.jar && \
       mkdir -p /host-dist/game/log && \
       cd /host-dist/game/ && \
       ./GameServerTask.sh"'
@@ -95,17 +117,19 @@ services:
       - 7777:7777/tcp
     volumes:
       - ./dist:/host-dist
+
+  # Login Server
   login-server:
     <<: *common
-    image: server:latest
+    image: loginserver:latest
     depends_on:
-      builder:
+      builder-loginserver:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    container_name: login_server # This name is important as it is also the hostname that the game server will use to connect to the login server
+    container_name: login_server
     command: 'bash -c "\
-      cp /opt/l2/LoginServer.jar /host-dist/libs/LoginServer.jar && \
+      /usr/bin/cp /opt/l2/LoginServer.jar /host-dist/libs/LoginServer.jar && \
       mkdir -p /host-dist/Login/log && \
       cd /host-dist/login/ && \
       ./LoginServerTask.sh"'
