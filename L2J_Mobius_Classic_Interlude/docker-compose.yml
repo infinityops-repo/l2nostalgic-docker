@@ -5,7 +5,7 @@ volumes:
   game_dist:
   login_dist:
 
-# Variáveis de ambiente do arquivo .env
+# Variáveis de ambiente provenientes do arquivo .env
 x-env: &env
   MARIADB_PASSWORD: '${MARIADB_PASSWORD:-default_pass}'
   MARIADB_ROOT_PASSWORD: '${MARIADB_ROOT_PASSWORD:-default_root_pass}'
@@ -95,7 +95,7 @@ services:
       database:
         condition: service_healthy
 
-  # Game Server com comandos de depuração
+  # Game Server com script de inicialização
   game-server:
     <<: *common
     image: gameserver:latest
@@ -105,20 +105,14 @@ services:
       database:
         condition: service_healthy
     container_name: game_server
-    command: 'bash -c "\
-      echo $PATH && \
-      which cp && \
-      ls -la /usr/bin/cp && \
-      /usr/bin/cp /opt/l2/GameServer.jar /host-dist/libs/GameServer.jar && \
-      mkdir -p /host-dist/game/log && \
-      cd /host-dist/game/ && \
-      ./GameServerTask.sh"'
+    command: '/host-dist/start_game_server.sh'
     ports:
       - 7777:7777/tcp
     volumes:
-      - ./dist:/host-dist
+      - game_dist:/host-dist
+      - ./start_game_server.sh:/host-dist/start_game_server.sh  # Montar o script de inicialização
 
-  # Login Server com comandos de depuração
+  # Login Server com script de inicialização
   login-server:
     <<: *common
     image: loginserver:latest
@@ -128,15 +122,9 @@ services:
       database:
         condition: service_healthy
     container_name: login_server
-    command: 'bash -c "\
-      echo $PATH && \
-      which cp && \
-      ls -la /usr/bin/cp && \
-      /usr/bin/cp /opt/l2/LoginServer.jar /host-dist/libs/LoginServer.jar && \
-      mkdir -p /host-dist/Login/log && \
-      cd /host-dist/login/ && \
-      ./LoginServerTask.sh"'
+    command: '/host-dist/start_login_server.sh'
     ports:
       - 2106:2106/tcp
     volumes:
-      - ./dist:/host-dist
+      - login_dist:/host-dist
+      - ./start_login_server.sh:/host-dist/start_login_server.sh  # Montar o script de inicialização
